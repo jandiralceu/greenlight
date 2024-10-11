@@ -41,8 +41,7 @@ func (app *application) showMoviesHandler(w http.ResponseWriter, r *http.Request
 		Year:      1942,
 	}
 
-	err = app.writeJSON(w, http.StatusOK, movie, nil)
-	if err != nil {
+	if err := app.writeJSON(w, http.StatusOK, movie, nil); err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }

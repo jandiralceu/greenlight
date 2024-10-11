@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -41,12 +42,19 @@ func (app *application) writeJSON(w http.ResponseWriter, status int, data any, h
 	return nil
 }
 
-func (app *application) readJSON(_ http.ResponseWriter, r *http.Request, destination any) error {
-	if err := json.NewDecoder(r.Body).Decode(destination); err != nil {
+func (app *application) readJSON(w http.ResponseWriter, r *http.Request, destination any) error {
+	maxBytes := 1_048_576
+	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
+
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(destination); err != nil {
 		var (
 			syntaxError           *json.SyntaxError
 			unmarshalTypeError    *json.UnmarshalTypeError
 			invalidUnmarshalError *json.InvalidUnmarshalError
+			maxBytesError         *http.MaxBytesError
 		)
 
 		switch {
@@ -61,11 +69,20 @@ func (app *application) readJSON(_ http.ResponseWriter, r *http.Request, destina
 			return fmt.Errorf("body contains incorrect JSON type (at character %d)", unmarshalTypeError.Offset)
 		case errors.Is(err, io.EOF):
 			return errors.New("body must not be empty")
+		case strings.HasPrefix(err.Error(), "json: unknown field "):
+			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
+			return fmt.Errorf("body contains unknown field %s", fieldName)
+		case errors.As(err, &maxBytesError):
+			return fmt.Errorf("body must not be larger than %d bytes", maxBytesError.Limit)
 		case errors.As(err, &invalidUnmarshalError):
 			panic(err)
 		default:
 			return err
 		}
+	}
+
+	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
+		return errors.New("body must only contain a single JSON value")
 	}
 
 	return nil
