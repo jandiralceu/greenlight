@@ -10,12 +10,11 @@ func (app *application) logError(r *http.Request, err error) {
 		method = r.Method
 		uri    = r.URL.RequestURI()
 	)
-
 	app.logger.Error(err.Error(), "method", method, "uri", uri)
 }
 
 func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message any) {
-	if err := app.writeJSON(w, status, map[string]interface{}{"error": message}, nil); err != nil {
+	if err := app.writeJSON(w, status, map[string]interface{}{"message": message}, nil); err != nil {
 		app.logError(r, err)
 		w.WriteHeader(500)
 	}
