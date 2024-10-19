@@ -10,6 +10,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/jandiralceu/greenlight/internal/data"
 	_ "github.com/lib/pq"
 	"github.com/subosito/gotenv"
 )
@@ -30,6 +31,7 @@ type config struct {
 type application struct {
 	config config
 	logger *slog.Logger
+	models data.Models
 }
 
 func main() {
@@ -77,6 +79,7 @@ func main() {
 	app := &application{
 		config: cfc,
 		logger: logger,
+		models: data.NewModels(db),
 	}
 
 	// Use the httprouter instance returned by app.routes() as the server handler.
