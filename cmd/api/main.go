@@ -4,9 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"flag"
-	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"time"
 
@@ -93,21 +91,11 @@ func main() {
 		models: data.NewModels(db),
 	}
 
-	// Use the httprouter instance returned by app.routes() as the server handler.
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfc.port),
-		Handler:      app.routes(),
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
+	// Call app.serve() to start the server.
+	if err := app.serve(); err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
-
-	// Start the HTTP server.
-	logger.Info("starting server", "addr", srv.Addr, "env", cfc.env)
-	err = srv.ListenAndServe()
-	logger.Error(err.Error())
-	os.Exit(1)
 }
 
 func openDB(cfg config) (*sql.DB, error) {
