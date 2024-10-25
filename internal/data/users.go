@@ -11,7 +11,7 @@ import (
 )
 
 type User struct {
-	ID        int       `json:"id"`
+	ID        int64     `json:"id"`
 	CreatedAt time.Time `json:"created_at"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
@@ -110,7 +110,7 @@ func (m UserModel) Insert(user *User) error {
 	return nil
 }
 
-// Retrieve the User details from the database based on the user's email address.
+// GetByEmail Retrieve the User details from the database based on the user's email address.
 // Because we have a UNIQUE constraint on the email column, this SQL query will only
 // return one record (or none at all, in which case we return a ErrRecordNotFound error).
 func (m UserModel) GetByEmail(email string) (*User, error) {
