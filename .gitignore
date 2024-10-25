@@ -1,6 +1,6 @@
 # editors
 .idea
-.vscode/
+.vscode
 __debug*
 
 # build
@@ -8,3 +8,6 @@ bin
 
 # others
 .rest
+
+# environment
+.env

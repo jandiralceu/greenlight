@@ -21,12 +21,12 @@ type Movie struct {
 	Version   int32     `json:"version"`
 }
 
-// Define a MovieModel struct type which wraps a sql.DB connection pool.
+// MovieModel Define a MovieModel struct type which wraps a sql.DB connection pool.
 type MovieModel struct {
 	DB *sql.DB
 }
 
-// Add a placeholder method for inserting a new record in the movies table.
+// Insert Add a placeholder method for inserting a new record in the movies table.
 func (m MovieModel) Insert(movie *Movie) error {
 	// Define the SQL query for inserting a new record in
 	// the system-generated data.
@@ -49,7 +49,7 @@ func (m MovieModel) Insert(movie *Movie) error {
 	return m.DB.QueryRowContext(ctx, query, args...).Scan(&movie.ID, &movie.CreatedAt, &movie.Version)
 }
 
-// Create a new GetAll() method which returns a slice of movies. Although we're not
+// GetAll Create a new  method which returns a slice of movies. Although we're not
 // using them right now, we've set this up to accept the various filter parameters as
 // arguments.
 func (m MovieModel) GetAll(title string, genres []string, filters Filters) ([]*Movie, Metadata, error) {
@@ -125,7 +125,7 @@ func (m MovieModel) GetAll(title string, genres []string, filters Filters) ([]*M
 	return movies, metadata, nil
 }
 
-// Add a placeholder method for fetching a specific record from the movies table.
+// Get Add a placeholder method for fetching a specific record from the movies table.
 func (m MovieModel) Get(id int64) (*Movie, error) {
 	// The PostgreSQL bigserial type that we're using for the movie ID starts
 	// auto-incrementing at 1 by default, so we know that no movies will have ID values
@@ -181,7 +181,7 @@ func (m MovieModel) Get(id int64) (*Movie, error) {
 	return &movie, nil
 }
 
-// Add a placeholder method for updating a specific record in the movies table.
+// Update Add a placeholder method for updating a specific record in the movies table.
 func (m MovieModel) Update(movie *Movie) error {
 	// Declare the SQL query for updating the record and returning the new version
 	// number.
@@ -218,7 +218,7 @@ func (m MovieModel) Update(movie *Movie) error {
 	return nil
 }
 
-// Add a placeholder method for deleting a specific record from the movies table.
+// Delete Add a placeholder method for deleting a specific record from the movies table.
 func (m MovieModel) Delete(id int64) error {
 	// Return an ErrRecordNotFound error if the movie ID is less than 1.
 	if id < 0 {

@@ -6,7 +6,7 @@ import (
 	"github.com/jandiralceu/greenlight/internal/validator"
 )
 
-// Define a new Metadata struct for holding the pagination metadata.
+// Metadata Define a struct for holding the pagination metadata.
 type Metadata struct {
 	CurrentPage  int `json:"current_page,omitempty"`
 	PageSize     int `json:"page_size,omitempty"`

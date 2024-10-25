@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"flag"
+	"github.com/jandiralceu/greenlight/internal/mailer"
 	"log/slog"
 	"os"
 	"time"
@@ -29,39 +30,43 @@ type config struct {
 		burst   int
 		enabled bool
 	}
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
+	}
 }
 
 type application struct {
 	config config
 	logger *slog.Logger
 	models data.Models
+	mailer mailer.Mailer
 }
 
 func main() {
 	_ = gotenv.Load()
-	// Declare an instance of the config struct.
 	var cfc config
 
-	// Read the value of the port and env command-line flags into the config struct. We default to using
-	// the port number 4000 and the environment "development" if no corresponding flags are provided.
 	flag.IntVar(&cfc.port, "port", 4000, "API server port")
 	flag.StringVar(&cfc.env, "env", "development", "Environment (development|staging|production)")
 
-	// Read the DSN value from the db-dsn command-line flag into the config struct. We
-	// default to using our development DSN if no flag is provided.
 	flag.StringVar(&cfc.db.dsn, "db-dsn", os.Getenv("DB_CONNECTION_STRING"), "PostgreSQL DSN")
-
-	// Read the connection pool settings from command-line flags into the config struct.
-	// Notice that the default values we're using are the ones we discussed above?
 	flag.IntVar(&cfc.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connections")
 	flag.IntVar(&cfc.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connections")
 	flag.DurationVar(&cfc.db.maxIdleTime, "db-max-idle-time", 15*time.Minute, "PostgreSQL max connection idle time")
 
-	// Create command line flags to read the setting values into the config struct.
-	// Notice that we use true as the default for the 'enabled' setting?
 	flag.Float64Var(&cfc.limiter.rps, "limiter-rps", 2, "Rate limiter maximum requests per second")
 	flag.IntVar(&cfc.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.BoolVar(&cfc.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
+
+	flag.StringVar(&cfc.smtp.host, "smtp-host", os.Getenv("SMTP_HOST"), "SMTP host")
+	flag.IntVar(&cfc.smtp.port, "smtp-port", 2525, "SMTP port")
+	flag.StringVar(&cfc.smtp.username, "smtp-username", os.Getenv("SMTP_USERNAME"), "SMTP username")
+	flag.StringVar(&cfc.smtp.password, "smtp-password", os.Getenv("SMTP_PASSWORD"), "SMTP password")
+	flag.StringVar(&cfc.smtp.sender, "smtp-sender", os.Getenv("SMTP_SENDER"), "SMTP sender")
 	flag.Parse()
 
 	// Initialize a new structured logger which writes log entries to the standard out stream.
@@ -89,6 +94,7 @@ func main() {
 		config: cfc,
 		logger: logger,
 		models: data.NewModels(db),
+		mailer: mailer.New(cfc.smtp.host, cfc.smtp.port, cfc.smtp.username, cfc.smtp.password, cfc.smtp.sender),
 	}
 
 	// Call app.serve() to start the server.
