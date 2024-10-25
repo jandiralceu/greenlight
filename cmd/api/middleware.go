@@ -34,25 +34,18 @@ func (app *application) rateLimit(next http.Handler) http.Handler {
 		clients = make(map[string]*client)
 	)
 
-	// Launch a background goroutine which removes old entries from the clients map once
-	// every minute.
 	go func() {
 		for {
 			time.Sleep(time.Minute)
 
-			// Lock the mutex to prevent any rate limiter checks from happening while
-			// the cleanup is taking place.
 			mu.Lock()
 
-			// Loop through all clients. If they haven't been seen within the last three
-			// minutes, delete the corresponding entry from the map.
 			for ip, client := range clients {
 				if time.Since(client.lastSeen) > 3*time.Minute {
 					delete(clients, ip)
 				}
 			}
 
-			// Importantly, unlock the mutex when the cleanup is complete.
 			mu.Unlock()
 		}
 	}()
