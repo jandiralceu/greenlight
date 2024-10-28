@@ -5,6 +5,7 @@ go 1.23.0
 require github.com/julienschmidt/httprouter v1.3.0
 
 require (
+	github.com/Rhymond/go-money v1.0.14 // indirect
 	github.com/go-mail/mail/v2 v2.3.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/lib/pq v1.10.9 // indirect
